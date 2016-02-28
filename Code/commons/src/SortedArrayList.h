@@ -7,11 +7,21 @@
 
 #ifndef SORTEDARRAYLIST_H_
 #define SORTEDARRAYLIST_H_
+
+#include <iostream>
+using namespace std;
 template<class T>
 class SortedArrayList {
 	int maxLength;
 	T** elements;
 	int length;
+	//we need private memeber functions to pop the list into a linear order after a removal
+	//were gonna take in a element and look for it or a look for a position that it can go
+	int binarySearch(T* element);
+	//when we call this private memeber function it will pop back the array to have no holes in the list
+	void popBack(int delPos);
+	void resize();
+	void sort();
 public:
 	SortedArrayList();
 	virtual ~SortedArrayList();
@@ -66,6 +76,7 @@ public:
 	 * */
 	T* get(int position);
 };
+
 template<class T>
 SortedArrayList<T>::SortedArrayList() {
 	maxLength = 100;
@@ -75,22 +86,168 @@ SortedArrayList<T>::SortedArrayList() {
 	}
 	length = 0;
 }
-
+template<class T>
+SortedArrayList<T>::~SortedArrayList() {
+	delete[] elements;
+}
+template<class T>
+void SortedArrayList<T>::resize() {
+	maxLength = 2 * maxLength;
+	T** oldArray = elements;
+	elements = new T*[maxLength];
+	for (int var = 0; var < length; ++var) {
+		elements[var] = oldArray[var];
+	}
+	for (int var = length; var < maxLength; ++var) {
+		elements[var] = 0;
+	}
+	delete[] oldArray;
+	oldArray = 0;
+}
+//sort the array to be a sorted list in this function
+// we will run this after length > 0 after a elemnts is added to the sorted list
+template<class T>
+void SortedArrayList<T>::sort() {
+	T* temp;
+	for (int i2 = 0; i2 <= length; i2++) {
+		for (int j = 0; j < 4; j++) {
+			//Swapping element in if statement
+			if (elements[j] > elements[j + 1]) {
+				temp = elements[j];
+				elements[j] = elements[j + 1];
+				elements[j + 1] = temp;
+			}
+		}
+	}
+}
 template<class T>
 int SortedArrayList<T>::getPosition(T* element) {
-return 0;
+	//int ReturnPos = 0;
+	int foundPos = binarySearch(element);
+	// if the position is found it will less than or equal to 0
+	if (foundPos <= 0) {
+		//should make the negative number positive
+		return -foundPos;
+	}
+	//if the result element isnt there return -1
+	return -1;
 }
-
+template<class T>
+T* SortedArrayList<T>::get(int position) {
+	if (position >= 0 && position <= maxLength) {
+		T* returnValue = elements[position];
+		cout << "return value of get: " << returnValue << endl;
+		return returnValue;
+	}
+	return NULL;
+}
+template<class T>
+int SortedArrayList<T>::binarySearch(T* elment) {
+	//find new condition for loop
+	int left = 0;
+	int right = length - 1;
+	int middle = left + ((right - left) / 2);
+	int i = 0;
+	while (i < length) {
+		cout << "left : " << left << endl;
+		cout << "Middle :" << middle << endl;
+		cout << "Right :" << right << endl;
+		if (elements[middle] == elment) {
+			cout << "if 1" << endl;
+			cout << "Returned Value :" << middle << endl;
+			return middle;
+		} else if (*elment < *elements[middle]) {
+			cout << "if 1" << endl;
+			right = (middle - 1);
+		} else if (*elment > *elements[middle]) {
+			cout << "if 1" << endl;
+			left = middle + 1;
+			middle = left + ((right - left) / 2);
+		} else if (*elements[middle - 1] < *elment
+				&& *elements[middle + 1] > *elment) {
+			cout << "if 1" << endl;
+			//if the left is less than the value and right is greater its our position we wont
+			return -middle;
+		}
+		i++;
+		cout << "NOT FINDING ANYTHING ELSE FULL" << endl;
+	}
+	//this function will return a positive number if the number is found and a negative number if the element is not in the list but needs a position
+	//if our number is less than the left and lower than the right its our position to return
+	//all else fails
+	return -1;
+}
+//we pass the position deleted to this function so we can pop the list back
+template<class T>
+void SortedArrayList<T>::popBack(int delPos) {
+	//we alter the array here
+	for (int i = delPos; i < length; i++) {
+		elements[i] = elements[i + 1];
+	}
+	//sets last pos of the shifted entry to NULL
+}
+//element remove
 template<class T>
 bool SortedArrayList<T>::remove(T* element) {
-return false;
+	cout << "binarySearchFail" << endl;
+	int present = binarySearch(element);
+	cout << "Present" << endl;
+	//if binary search returns a number greater than or equal to zero, the entry is there
+	if (present >= 0) {
+		//T* returnElement = elements[present];
+		elements[present] = 0;
+		popBack(present);
+		length--;
+		return true;
+	} else
+		return false;
+}
+//specific position remove
+template<class T>
+bool SortedArrayList<T>::remove(int position) {
+	cout << "binarySearchFail" << endl;
+	if (position <= length && binarySearch(elements[position]) <= 0) {
+		//T* returnElement = elements[position];
+		cout << "here" << endl;
+		elements[position] = NULL;
+		popBack(position);
+		length--;
+		return true;
+	}
+	return false;
 }
 template<class T>
 int SortedArrayList<T>::add(T* element) {
-return 0;
+//if our address is not NULL add it to the list
+	int position = 0;
+	if (maxLength == length) {
+		//if array is full resize it
+		resize();
+	}
+	//int present = binarySearch(element);
+	//if the entry is not null add it
+	if (element != NULL) {
+		elements[length] = element;
+		position = length;
+		cout << position << endl;
+		length++;
+		//were going return the position the element was added
+		//we need to sort it here
+		//if our search doesnt land it were it is supposed to go
+		//sort it
+		//if length > 0 check for sorting
+		if (length > 0) {
+			sort();
+		}
+		return position;
+	} else {
+		return -1;
+	}
+	return 0;
 }
 template<class T>
 int SortedArrayList<T>::size() {
-return 0;
+	return this->length;
 }
+
 #endif /* SORTEDARRAYLIST_H_ */
