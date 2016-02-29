@@ -75,11 +75,14 @@ public:
 	 * Otherwise, it returns the requested element.
 	 * */
 	T* get(int position);
+
+	void display();
+
 };
 
 template<class T>
 SortedArrayList<T>::SortedArrayList() {
-	maxLength = 100;
+	maxLength = 10;
 	elements = new T*[maxLength];
 	for (int var = 0; var < maxLength; ++var) {
 		elements[var] = NULL;
@@ -104,21 +107,30 @@ void SortedArrayList<T>::resize() {
 	delete[] oldArray;
 	oldArray = 0;
 }
+template<class T>
+void SortedArrayList<T>::display() {
+	for (int i = 0; i < length; i++) {
+		cout << i + 1 << ": " << *elements[i] << endl;
+	}
+}
 //sort the array to be a sorted list in this function
 // we will run this after length > 0 after a elemnts is added to the sorted list
 template<class T>
 void SortedArrayList<T>::sort() {
-	T* temp;
-	for (int i2 = 0; i2 <= length; i2++) {
-		for (int j = 0; j < 4; j++) {
-			//Swapping element in if statement
-			if (elements[j] > elements[j + 1]) {
-				temp = elements[j];
-				elements[j] = elements[j + 1];
-				elements[j + 1] = temp;
-			}
+	//T* temp;
+	//here we will swap the current element with the previous
+	//as this gets invoked if last < current
+	//everthing is off by 2 because length is increased before invocationb
+	cout << "sort started " << endl;
+	//currEntry should be the current position in the list
+	//int currEntry = length-1;
+	for (int i = 0; i < length; i++) {
+		//swap nessecary entries in the loop
+		if (*elements[i] > *elements[i + 1] && i + 1 < length) {
+			cout << "NUM out of order :" << i + 1 << endl;
 		}
 	}
+
 }
 template<class T>
 int SortedArrayList<T>::getPosition(T* element) {
@@ -152,7 +164,7 @@ int SortedArrayList<T>::binarySearch(T* elment) {
 		cout << "left : " << left << endl;
 		cout << "Middle :" << middle << endl;
 		cout << "Right :" << right << endl;
-		if (elements[middle] == elment) {
+		if (*elements[middle] == *elment) {
 			cout << "if 1" << endl;
 			cout << "Returned Value :" << middle << endl;
 			return middle;
@@ -183,7 +195,9 @@ void SortedArrayList<T>::popBack(int delPos) {
 	//we alter the array here
 	for (int i = delPos; i < length; i++) {
 		elements[i] = elements[i + 1];
+		//making sure the shifted element at the end isnt duplicated
 	}
+	elements[length] = NULL;
 	//sets last pos of the shifted entry to NULL
 }
 //element remove
@@ -195,8 +209,8 @@ bool SortedArrayList<T>::remove(T* element) {
 	//if binary search returns a number greater than or equal to zero, the entry is there
 	if (present >= 0) {
 		//T* returnElement = elements[present];
-		elements[present] = 0;
-		popBack(present);
+		elements[present] = NULL;
+		//popBack(present);
 		length--;
 		return true;
 	} else
@@ -205,8 +219,9 @@ bool SortedArrayList<T>::remove(T* element) {
 //specific position remove
 template<class T>
 bool SortedArrayList<T>::remove(int position) {
-	cout << "binarySearchFail" << endl;
-	if (position <= length && binarySearch(elements[position]) <= 0) {
+	int present = binarySearch(elements[position]);
+	cout << "present : " << present << endl;
+	if (present >= 0) {
 		//T* returnElement = elements[position];
 		cout << "here" << endl;
 		elements[position] = NULL;
@@ -231,12 +246,13 @@ int SortedArrayList<T>::add(T* element) {
 		position = length;
 		cout << position << endl;
 		length++;
-		//were going return the position the element was added
-		//we need to sort it here
-		//if our search doesnt land it were it is supposed to go
-		//sort it
-		//if length > 0 check for sorting
-		if (length > 0) {
+		//if our added element is greater than the pervious element, swap them
+		//
+		if (length > 1) {
+			cout << "previous entry : " << *elements[length - 2] << endl;
+			cout << "Current entry : " << *element << endl;
+		}
+		if (length > 1 && *elements[length - 2] > *element) {
 			sort();
 		}
 		return position;
