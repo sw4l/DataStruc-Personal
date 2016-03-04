@@ -12,8 +12,10 @@ template<class T>
 class SortedLinkedList {
 	Node<T>* head;
 	int length;
+	void sortNodes();
 	Node<T>* getNode(int position);
 public:
+	void displayNodes();
 	SortedLinkedList();
 	virtual ~SortedLinkedList();
 	/**
@@ -86,23 +88,74 @@ SortedLinkedList<T>::~SortedLinkedList() {
 	}
 }
 template<class T>
+void SortedLinkedList<T>::displayNodes() {
+	for (int i = 0; i < length; i++) {
+		cout << i + 1 << " : " << *get(i) << endl;
+	}
+
+}
+
+template<class T>
+Node<T>* SortedLinkedList<T>::getNode(int position) {
+	Node<T>* node = head;
+	for (int var = 0; var < position; ++var) {
+		node = node->getNext();
+	}
+	return node;
+}
+
+template<class T>
 int SortedLinkedList<T>::size() {
 	return length;
 }
-
+//sorts the nodes as they are added to the list
 template<class T>
-int SortedLinkedList<T>::getPosition(T* element) {
-
-	return 0;
+void SortedLinkedList<T>::sortNodes() {
+//cur working here
+//until we get our iterator we iterate through manually comparing
+	Node<T>* node = head;
+	Node<T>* temp = NULL;
+	Node<T>* hold = NULL;
+	Node<T>* nodeAfter = NULL;
+	for (int i = 0; i < length; i++) {
+		//if our current pos is grater than the next swtich them
+		//next value in the list
+		//1 ahead
+		hold = head->getNext();
+		// 2 ahead
+		nodeAfter = hold->getNext();
+		if (*head->getElement() > *head->getNext()->getElement()) {
+			temp = node;
+			hold = temp;
+			temp = nodeAfter;
+		}
+		head = head->getNext();
+	}
 }
 
+//returns -1 if the element is not in the list
+template<class T>
+int SortedLinkedList<T>::getPosition(T* element) {
+	Node<T>* node = head;
+	int retVal = -1;
+
+	for (int var = 0; var < length - 1; ++var) {
+		if (*element == *node->getElement()) {
+			retVal = var;
+		}
+		node = node->getNext();
+		retVal = var;
+	}
+	return retVal;
+}
+
+//type error fix this
 template<class T>
 T* SortedLinkedList<T>::get(int position) {
-	bool notValidPosition = (position < 0 || position >= length);
-	if (notValidPosition) {
-		return NULL;
+	Node<T> *node = head;
+	for (int var = 0; var < position; ++var) {
+		node = node->getNext();
 	}
-	Node<T>* node = getNode(position);
 	return node->getElement();
 }
 
@@ -117,7 +170,7 @@ bool SortedLinkedList<T>::remove(int position) {
 		nodeForRemoval = head;
 		head = head->getNext();
 	} else {
-		Node<T>* precedingNode = getNode(position - 1);
+		Node<T>* precedingNode = getPosition(position - 1);
 		nodeForRemoval = precedingNode->getNext();
 		precedingNode->setNext(nodeForRemoval->getNext());
 	}
@@ -132,11 +185,48 @@ bool SortedLinkedList<T>::remove(int position) {
 
 template<class T>
 bool SortedLinkedList<T>::remove(T* element) {
+//iteratator needed
+//search through and find the node its in
+	int pos = getNode(element);
+	Node<T>* nodeForRemoval = NULL;
+//if our node is in the list
+	if (pos >= 0) {
 
+		if (pos == 0) {
+			nodeForRemoval = head;
+			head = head->getNext();
+		} else {
+			Node<T>* precedingNode = getNode(length - 1);
+			nodeForRemoval = precedingNode->getNext();
+			precedingNode->setNext(nodeForRemoval->getNext());
+		}
+		return true;
+	}
+
+
+	return false;
 }
 
 template<class T>
 int SortedLinkedList<T>::add(T* element) {
+	Node<T>* newNode = new Node<T>(element);
+// if length = 0 no sort else sort
+//if not in list return 0
+	cout << "Added" << endl;
+	if (length == 0) {
+		newNode->setNext(head);
+		head = newNode;
+	} else {
+		Node<T>* precedingNode = getNode(length - 1);
+		newNode->setNext(precedingNode->getNext());
+		precedingNode->setNext(newNode);
+		//sortNodes();
+	}
+	length++;
+	//get position again after sorting
+
+	int getPos = getPosition(element);
+	return getPos;
 
 }
 #endif /* SORTEDLINKEDLIST_H_ */
