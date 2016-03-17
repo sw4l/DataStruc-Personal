@@ -82,6 +82,6 @@ T* SuperStack<T>::peek() {
 
 template<class T>
 T* SuperStack<T>::getMax() {
-	return this->maxValue;
+	return this->maxValue.peek();
 }
 #endif /* SUPERSTACK_H_ */
